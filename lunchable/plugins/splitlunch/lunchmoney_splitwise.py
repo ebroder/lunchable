@@ -1150,6 +1150,8 @@ class SplitLunch(splitwise.Splitwise):
 
     def get_new_transactions(
         self,
+        dated_after: Optional[datetime.datetime] = None,
+        dated_before: Optional[datetime.datetime] = None,
     ) -> Tuple[List[SplitLunchExpense], List[TransactionObject]]:
         """
         Get Splitwise Transactions that don't exist in Lunch Money
@@ -1174,7 +1176,11 @@ class SplitLunch(splitwise.Splitwise):
             for item in splitlunch_expenses
             if item.external_id is not None
         }
-        splitwise_expenses = self.get_expenses(limit=0)
+        splitwise_expenses = self.get_expenses(
+            limit=0,
+            dated_after=dated_after,
+            dated_before=dated_before,
+        )
         splitwise_ids = {item.splitwise_id for item in splitwise_expenses}
         new_ids = splitwise_ids.difference(splitlunch_ids)
         filtered_expenses = self.filter_relevant_splitwise_expenses(
@@ -1229,7 +1235,11 @@ class SplitLunch(splitwise.Splitwise):
         ]
         return transactions_to_delete
 
-    def refresh_splitwise_transactions(self) -> Dict[str, Any]:
+    def refresh_splitwise_transactions(
+        self,
+        dated_after: Optional[datetime.datetime] = None,
+        dated_before: Optional[datetime.datetime] = None,
+    ) -> Dict[str, Any]:
         """
         Import New Splitwise Transactions to Lunch Money
 
@@ -1240,7 +1250,10 @@ class SplitLunch(splitwise.Splitwise):
         -------
         List[SplitLunchExpense]
         """
-        new_transactions, deleted_transactions = self.get_new_transactions()
+        new_transactions, deleted_transactions = self.get_new_transactions(
+            dated_after=dated_after,
+            dated_before=dated_before,
+        )
         self.splitwise_to_lunchmoney(expenses=new_transactions)
         splitwise_asset = self.update_splitwise_balance()
         self.handle_deleted_transactions(deleted_transactions=deleted_transactions)
