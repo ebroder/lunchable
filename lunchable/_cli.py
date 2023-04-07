@@ -152,6 +152,18 @@ def splitlunch() -> None:
     pass
 
 
+dated_after = click.option(
+    "--dated-after",
+    default=None,
+    help="ISO 8601 Date time. Return expenses later that this date",
+)
+dated_before = click.option(
+    "--dated-before",
+    default=None,
+    help="ISO 8601 Date time. Return expenses earlier than this date",
+)
+
+
 @splitlunch.command("expenses")
 @click.option(
     "--limit", default=None, help="Limit the amount of Results. 0 returns everything."
@@ -160,16 +172,8 @@ def splitlunch() -> None:
 @click.option("--limit", default=None, help="Number of expenses to be returned")
 @click.option("--group-id", default=None, help="GroupID of the expenses")
 @click.option("--friendship-id", default=None, help="FriendshipID of the expenses")
-@click.option(
-    "--dated-after",
-    default=None,
-    help="ISO 8601 Date time. Return expenses later that this date",
-)
-@click.option(
-    "--dated-before",
-    default=None,
-    help="ISO 8601 Date time. Return expenses earlier than this date",
-)
+@dated_after
+@dated_before
 @click.option(
     "--updated-after",
     default=None,
@@ -311,7 +315,9 @@ def update_splitwise_balance() -> None:
 
 
 @splitlunch.command("refresh")
-def refresh_splitwise_transactions() -> None:
+@dated_after
+@dated_before
+def refresh_splitwise_transactions(**kwargs: str) -> None:
     """
     Import New Splitwise Transactions to Lunch Money and
 
@@ -322,7 +328,7 @@ def refresh_splitwise_transactions() -> None:
     from lunchable.plugins.splitlunch import SplitLunch
 
     splitlunch = SplitLunch()
-    response = splitlunch.refresh_splitwise_transactions()
+    response = splitlunch.refresh_splitwise_transactions(**kwargs)  # type: ignore[arg-type]
     print_json(data=response, default=pydantic_encoder)
 
 
